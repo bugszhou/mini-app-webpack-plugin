@@ -1,0 +1,19 @@
+{
+  "name": "miniapp-auto-webpack-plugin",
+  "version": "1.0.0",
+  "description": "小程序webpack插件",
+  "main": "src/cjs.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bugszhou/mini-app-webpack-plugin.git"
+  },
+  "author": "bugszhou",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bugszhou/mini-app-webpack-plugin/issues"
+  },
+  "homepage": "https://github.com/bugszhou/mini-app-webpack-plugin#readme"
+}
