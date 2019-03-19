@@ -40,7 +40,6 @@ class MiniappAutoPlugin {
           if (/\.js$/.test(pathurl) && commons.indexOf(pathurl) < 0) {
             let commonStrArr = this.getRelativePath(pathurl, commons);
             assets[pathurl]._source.children.unshift(commonStrArr.join(''));
-            console.log(commonStrArr.join(''));
           }
         });
       });
