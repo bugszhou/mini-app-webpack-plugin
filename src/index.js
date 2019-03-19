@@ -36,10 +36,11 @@ class MiniappAutoPlugin {
       (compilation) => {
         const {entrypoints, assets} = compilation || {};
         let commons = this.getCommonSplit(entrypoints);
-        Object.entries(assets).forEach(([pathurl, source]) => {
-          if (/\.js$/.test(pathurl)) {
+        Object.keys(assets).forEach((pathurl) => {
+          if (/\.js$/.test(pathurl) && commons.indexOf(pathurl) < 0) {
             let commonStrArr = this.getRelativePath(pathurl, commons);
-            source._source.children.unshift(commonStrArr.join(''));
+            assets[pathurl]._source.children.unshift(commonStrArr.join(''));
+            console.log(commonStrArr.join(''));
           }
         });
       });
@@ -54,7 +55,7 @@ class MiniappAutoPlugin {
           let splitFile = c.files[0],
             isJs = /\.js$/.test(splitFile);
           if (isJs && commons.indexOf(splitFile) < 0) {
-            commons.push(splitFile);
+            commons.push(splitFile.split(path.sep).join('\/'));
           }
         }
       });
@@ -65,7 +66,7 @@ class MiniappAutoPlugin {
   getRelativePath(url, commons = []) {
     const resolveUrl = path.resolve(process.cwd(), path.dirname(url));
     return commons.map((common) => {
-      return `require("${path.relative(resolveUrl, path.resolve(process.cwd(), common))}");\n\n\n`;
+      return `require("./${path.relative(resolveUrl, path.resolve(process.cwd(), common)).split('\\').join('\/')}");\n\n\n`;
     });
   }
 }
