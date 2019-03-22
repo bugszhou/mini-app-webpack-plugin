@@ -39,7 +39,11 @@ class MiniappAutoPlugin {
         Object.keys(assets).forEach((pathurl) => {
           if (/\.js$/.test(pathurl) && commons.indexOf(pathurl) < 0) {
             let commonStrArr = this.getRelativePath(pathurl, commons);
-            assets[pathurl]._source.children.unshift(commonStrArr.join(''));
+            if (assets[pathurl]._value) {
+              assets[pathurl]._value = commonStrArr.join('') + assets[pathurl]._value;
+            } else {
+              assets[pathurl]._source.children.unshift(commonStrArr.join(''))
+            }
           }
         });
       });
