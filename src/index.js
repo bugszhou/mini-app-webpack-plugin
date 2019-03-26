@@ -42,7 +42,11 @@ class MiniappAutoPlugin {
             if (assets[pathurl]._value) {
               assets[pathurl]._value = commonStrArr.join('') + assets[pathurl]._value;
             } else {
-              assets[pathurl]._source.children.unshift(commonStrArr.join(''))
+              if (assets[pathurl].children && Array.isArray(assets[pathurl].children)) {
+                assets[pathurl].children[0]._value = commonStrArr.join('') + assets[pathurl].children[0]._value;
+              } else {
+                assets[pathurl]._source.children.unshift(commonStrArr.join(''));
+              }
             }
           }
         });
