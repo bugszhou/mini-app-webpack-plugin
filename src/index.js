@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 
 const pluginName = 'mini-app-webpack-plugin',
   path = require('path'),
+  readFileSync = require('fs').readFileSync,
   exists = require('fs').existsSync,
   parseEntry = require('./lib/parseEntry');
 
@@ -18,7 +19,13 @@ function getEntry({
   if (!exists(entryFile)) {
     throw new Error(`Can not find module '${entry}'`);
   }
-  const appJson = require(entryFile);
+  let appJson = readFileSync(entryFile, 'utf-8');
+  try {
+    appJson = JSON.parse(appJson);
+  } catch (e) {
+    console.error(e);
+    throw new Error('Entry must be json string!');
+  }
   appJson.pages.unshift('app');
   return parseEntry({baseUrl: './src', entryFile: appJson, cssSuffix, xmlSuffix});
 }
