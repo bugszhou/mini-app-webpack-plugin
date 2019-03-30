@@ -37,10 +37,11 @@ function hasSubPackages(packages) {
 
 function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl) {
   const cwd = process.cwd(),
-    entry = {};
+    entry = {},
+    entryJsonFiles = {};
   pages.forEach((page) => {
     let {jsPath, xml, css, json} = getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix);
-    let pageEntry = getEntry([jsPath, xml, css, json], baseUrl);
+    let {pageEntry, jsonFiles} = getEntry([jsPath, xml, css, json], baseUrl);
     if (exists(json.reourcePath)) {
       let {entryName, data} = getJsonComponents(json.reourcePath, JSON.parse(fs.readFileSync(json.reourcePath).toString()), {
         cssSuffix,
@@ -49,17 +50,28 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl) {
         baseUrl
       });
       if (entryName) {
-        let componentsEntry = getEntry([data.jsPath, data.xml, data.css, data.json], baseUrl);
+        let componentsEntryObj = getEntry([data.jsPath, data.xml, data.css, data.json], baseUrl);
+        let componentsEntry = componentsEntryObj.pageEntry;
+        let componentsJsonFiles = componentsEntryObj.jsonFiles;
         if (componentsEntry.length) {
           entry[`${entryName}`] = componentsEntry;
+        }
+        if (componentsJsonFiles.length) {
+          entry[`${entryName}`] = componentsJsonFiles;
         }
       }
     }
     if (pageEntry.length) {
       entry[`${page}`] = pageEntry;
     }
+    if (jsonFiles.length) {
+      entryJsonFiles[`${page}`] = jsonFiles;
+    }
   });
-  return entry;
+  return {
+    entry,
+    entryJsonFiles
+  };
 }
 
 function getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix) {
@@ -84,13 +96,20 @@ function getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix) {
 }
 
 function getEntry(entry = [], baseUrl = './src') {
-  let pageEntry = [];
+  let pageEntry = [],
+    jsonFiles = [];
   entry.forEach(({reourcePath, entry}) => {
     if (exists(reourcePath)) {
+      if (/\.json$/.test(entry)) {
+        jsonFiles.push(`${baseUrl}/${entry}`);
+      }
       pageEntry.push(`${baseUrl}/${entry}`);
     }
   });
-  return pageEntry;
+  return {
+    pageEntry,
+    jsonFiles
+  };
 }
 
 function getJsonComponents(resourcePath, json = {}, options = {}) {
