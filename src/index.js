@@ -21,7 +21,7 @@ function getEntry({
   }
   let appJson = readFileSync(entryFile, 'utf-8');
   try {
-    appJson = JSON.parse(appJson);
+    appJson = JSON.parse(appJson || '{}');
   } catch (e) {
     console.error(e);
     throw new Error('Entry must be json string!');

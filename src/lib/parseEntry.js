@@ -43,7 +43,7 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl) {
     let {jsPath, xml, css, json} = getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix);
     let {pageEntry, jsonFiles} = getEntry([jsPath, xml, css, json], baseUrl);
     if (exists(json.reourcePath)) {
-      let {entryName, data} = getJsonComponents(json.reourcePath, JSON.parse(fs.readFileSync(json.reourcePath).toString()), {
+      let {entryName, data} = getJsonComponents(json.reourcePath, JSON.parse(fs.readFileSync(json.reourcePath).toString() || '{}'), {
         cssSuffix,
         xmlSuffix,
         cwd,
