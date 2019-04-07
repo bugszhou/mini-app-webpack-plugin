@@ -35,13 +35,20 @@ function hasSubPackages(packages) {
   return isArray(packages);
 }
 
+function isPlugin(url) {
+  return /^plugin\:\/\//.test(url);
+}
+
 function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl) {
   const cwd = process.cwd(),
     entry = {},
     entryJsonFiles = {};
   pages.forEach((page) => {
+    if (isPlugin(page)) {
+      return false;
+    }
     let {jsPath, xml, css, json} = getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix);
-    let {pageEntry, jsonFiles} = getEntry([jsPath, xml, css, json], baseUrl);
+    let {pageEntry, jsonFiles} = getEntry([jsPath, xml, css, json], baseUrl, cssSuffix, xmlSuffix);
     if (exists(json.reourcePath)) {
       let {entryName, data} = getJsonComponents(json.reourcePath, JSON.parse(fs.readFileSync(json.reourcePath).toString() || '{}'), {
         cssSuffix,
@@ -50,7 +57,7 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl) {
         baseUrl
       });
       if (entryName) {
-        let componentsEntryObj = getEntry([data.jsPath, data.xml, data.css, data.json], baseUrl);
+        let componentsEntryObj = getEntry([data.jsPath, data.xml, data.css, data.json], baseUrl, cssSuffix, xmlSuffix);
         let componentsEntry = componentsEntryObj.pageEntry;
         let componentsJsonFiles = componentsEntryObj.jsonFiles;
         if (componentsEntry.length) {
@@ -95,15 +102,22 @@ function getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix) {
   };
 }
 
-function getEntry(entry = [], baseUrl = './src') {
+function getEntry(entry = [], baseUrl = './src', cssSuffix, xmlSuffix) {
   let pageEntry = [],
     jsonFiles = [];
   entry.forEach(({reourcePath, entry}) => {
-    if (exists(reourcePath)) {
-      if (/\.json$/.test(entry)) {
-        jsonFiles.push(`${baseUrl}/${entry}`);
+    let entryUrl = `${baseUrl}/${entry}`;
+    if (new RegExp(`\.(${cssSuffix}|json)$`).test(entry)) {
+      if (exists(reourcePath)) {
+        pageEntry.push(entryUrl);
+        if (/\.json$/.test(entry)) {
+          jsonFiles.push(entryUrl);
+        }
       }
-      pageEntry.push(`${baseUrl}/${entry}`);
+    } else {
+      if (!new RegExp(`\/app\.${xmlSuffix}$`).test(entryUrl)) {
+        pageEntry.push(entryUrl);
+      }
     }
   });
   return {
@@ -118,6 +132,12 @@ function getJsonComponents(resourcePath, json = {}, options = {}) {
     return {};
   }
   return Object.entries(json.usingComponents).map(([componentName, url]) => {
+    if (isPlugin(url)) {
+      return {
+        entryName: '',
+        data: {},
+      };
+    }
     let entryKey = getRequire(resourcePath, url);
     return {
       entryName: entryKey,
@@ -138,4 +158,3 @@ function getRequire(resourcePath, url) {
 
   return url.replace('\/', '');
 }
-
