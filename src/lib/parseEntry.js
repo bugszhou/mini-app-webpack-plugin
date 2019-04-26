@@ -64,7 +64,7 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl) {
           entry[`${entryName}`] = componentsEntry;
         }
         if (componentsJsonFiles.length) {
-          entry[`${entryName}`] = componentsJsonFiles;
+          entryJsonFiles[`${entryName}`] = componentsJsonFiles;
         }
       }
     }
