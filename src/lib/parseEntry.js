@@ -13,7 +13,7 @@ const path = require('path'),
  * wxs ==> [wxs(js)] 单独一个webpack
  */
 
-module.exports = function({baseUrl = './src', entryFile = '', cssSuffix, xmlSuffix} = {}) {
+module.exports = function({baseUrl = './src', entryFile = '', cssSuffix, xmlSuffix, compileCssSuffix} = {}) {
 
   let pages = entryFile.pages,
     subpackages = entryFile.subpackages;
@@ -28,7 +28,7 @@ module.exports = function({baseUrl = './src', entryFile = '', cssSuffix, xmlSuff
     });
     pages = pages.concat(tmp);
   }
-  return getBaseEntry(pages, cssSuffix, xmlSuffix, baseUrl);
+  return getBaseEntry(pages, cssSuffix, xmlSuffix, baseUrl, compileCssSuffix);
 };
 
 function hasSubPackages(packages) {
@@ -39,7 +39,7 @@ function isPlugin(url) {
   return /^plugin\:\/\//.test(url);
 }
 
-function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl) {
+function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffix) {
   const cwd = process.cwd(),
     entry = {},
     entryJsonFiles = {};
@@ -47,17 +47,18 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl) {
     if (isPlugin(page)) {
       return false;
     }
-    let {jsPath, xml, css, json} = getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix);
-    let {pageEntry, jsonFiles} = getEntry([jsPath, xml, css, json], baseUrl, cssSuffix, xmlSuffix);
+    let {jsPath, xml, css, json, ocss} = getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
+    let {pageEntry, jsonFiles} = getEntry([jsPath, xml, css, json, ocss], baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
     if (exists(json.reourcePath)) {
       let {entryName, data} = getJsonComponents(json.reourcePath, JSON.parse(fs.readFileSync(json.reourcePath).toString() || '{}'), {
         cssSuffix,
+        compileCssSuffix,
         xmlSuffix,
         cwd,
         baseUrl
       });
       if (entryName) {
-        let componentsEntryObj = getEntry([data.jsPath, data.xml, data.css, data.json], baseUrl, cssSuffix, xmlSuffix);
+        let componentsEntryObj = getEntry([data.jsPath, data.xml, data.css, data.json, data.ocss], baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
         let componentsEntry = componentsEntryObj.pageEntry;
         let componentsJsonFiles = componentsEntryObj.jsonFiles;
         if (componentsEntry.length) {
@@ -81,7 +82,7 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl) {
   };
 }
 
-function getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix) {
+function getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix) {
   return {
     jsPath: {
       reourcePath: path.resolve(cwd, `${baseUrl}/${page}.js`),
@@ -92,6 +93,10 @@ function getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix) {
       entry: `${page}.${xmlSuffix}`
     },
     css: {
+      reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${compileCssSuffix}`),
+      entry: `${page}.${compileCssSuffix}`
+    },
+    ocss: {
       reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${cssSuffix}`),
       entry: `${page}.${cssSuffix}`
     },
@@ -102,12 +107,12 @@ function getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix) {
   };
 }
 
-function getEntry(entry = [], baseUrl = './src', cssSuffix, xmlSuffix) {
+function getEntry(entry = [], baseUrl = './src', cssSuffix, xmlSuffix, compileCssSuffix) {
   let pageEntry = [],
     jsonFiles = [];
   entry.forEach(({reourcePath, entry}) => {
     let entryUrl = `${baseUrl}/${entry}`;
-    if (new RegExp(`\.(${cssSuffix}|json)$`).test(entry)) {
+    if (new RegExp(`\.(${cssSuffix}|${compileCssSuffix}|json)$`).test(entry)) {
       if (exists(reourcePath)) {
         pageEntry.push(entryUrl);
         if (/\.json$/.test(entry)) {
@@ -141,7 +146,7 @@ function getJsonComponents(resourcePath, json = {}, options = {}) {
     let entryKey = getRequire(resourcePath, url);
     return {
       entryName: entryKey,
-      data: getEntryFileUrl(entryKey, options.cwd, options.baseUrl, options.cssSuffix, options.xmlSuffix)
+      data: getEntryFileUrl(entryKey, options.cwd, options.baseUrl, options.cssSuffix, options.xmlSuffix, options.compileCssSuffix)
     };
   })[0] || {};
 }
