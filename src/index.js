@@ -27,8 +27,17 @@ function getEntry({
     console.error(e);
     throw new Error('Entry must be json string!');
   }
+
   appJson.pages.unshift('app');
-  return parseEntry({baseUrl: './src', entryFile: appJson, cssSuffix, compileCssSuffix, xmlSuffix});
+
+  const sitemap = appJson.sitemapLocation || '',
+    entryFiles = parseEntry({baseUrl: './src', entryFile: appJson, cssSuffix, compileCssSuffix, xmlSuffix});
+
+  if (sitemap) {
+    let sitemapName = sitemap.replace(/(\.[\s\S]*?)$/, '');
+    entryFiles.entryJsonFiles[sitemapName] = [`./src/${sitemap}`];
+  }
+  return entryFiles;
 }
 
 class MiniappAutoPlugin {
