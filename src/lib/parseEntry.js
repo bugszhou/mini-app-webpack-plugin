@@ -40,8 +40,8 @@ function isPlugin(url) {
 }
 
 function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffix) {
-  const cwd = process.cwd(),
-    entry = {},
+  const cwd = process.cwd();
+  let entry = {},
     entryJsonFiles = {};
   pages.forEach((page) => {
     if (isPlugin(page)) {
@@ -50,24 +50,16 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffi
     let {jsPath, xml, css, json, ocss} = getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
     let {pageEntry, jsonFiles} = getEntry([jsPath, xml, css, json, ocss], baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
     if (exists(json.reourcePath)) {
-      let {entryName, data} = getJsonComponents(json.reourcePath, JSON.parse(fs.readFileSync(json.reourcePath).toString() || '{}'), {
+      let components = getJsonComponents(json.reourcePath, JSON.parse(fs.readFileSync(json.reourcePath).toString() || '{}'), {
         cssSuffix,
         compileCssSuffix,
         xmlSuffix,
         cwd,
         baseUrl
       });
-      if (entryName) {
-        let componentsEntryObj = getEntry([data.jsPath, data.xml, data.css, data.json, data.ocss], baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
-        let componentsEntry = componentsEntryObj.pageEntry;
-        let componentsJsonFiles = componentsEntryObj.jsonFiles;
-        if (componentsEntry.length) {
-          entry[`${entryName}`] = componentsEntry;
-        }
-        if (componentsJsonFiles.length) {
-          entryJsonFiles[`${entryName}`] = componentsJsonFiles;
-        }
-      }
+      let jsonComponentsData = eachJsonComponents(components, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
+      entry = {...entry, ...jsonComponentsData.entry};
+      entryJsonFiles = {...entryJsonFiles, ...jsonComponentsData.entryJsonFiles};
     }
     if (pageEntry.length) {
       entry[`${page}`] = pageEntry;
@@ -134,7 +126,7 @@ function getEntry(entry = [], baseUrl = './src', cssSuffix, xmlSuffix, compileCs
 function getJsonComponents(resourcePath, json = {}, options = {}) {
   let isUseComponent = isObject(json.usingComponents) && !isEmpty(json.usingComponents);
   if (!isUseComponent) {
-    return {};
+    return [];
   }
   return Object.entries(json.usingComponents).map(([componentName, url]) => {
     if (isPlugin(url)) {
@@ -148,7 +140,29 @@ function getJsonComponents(resourcePath, json = {}, options = {}) {
       entryName: entryKey,
       data: getEntryFileUrl(entryKey, options.cwd, options.baseUrl, options.cssSuffix, options.xmlSuffix, options.compileCssSuffix)
     };
-  })[0] || {};
+  }) || [];
+}
+
+function eachJsonComponents(components = [], baseUrl, cssSuffix, xmlSuffix, compileCssSuffix) {
+  const entry = {},
+    entryJsonFiles = {};
+  components.forEach(({entryName, data}) => {
+    if (entryName) {
+      let componentsEntryObj = getEntry([data.jsPath, data.xml, data.css, data.json, data.ocss], baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
+      let componentsEntry = componentsEntryObj.pageEntry;
+      let componentsJsonFiles = componentsEntryObj.jsonFiles;
+      if (componentsEntry.length) {
+        entry[`${entryName}`] = componentsEntry;
+      }
+      if (componentsJsonFiles.length) {
+        entryJsonFiles[`${entryName}`] = componentsJsonFiles;
+      }
+    }
+  });
+  return {
+    entry,
+    entryJsonFiles,
+  };
 }
 
 function getRequire(resourcePath, url) {
