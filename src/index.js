@@ -8,7 +8,8 @@ const pluginName = 'mini-app-webpack-plugin',
   path = require('path'),
   readFileSync = require('fs').readFileSync,
   exists = require('fs').existsSync,
-  parseEntry = require('./lib/parseEntry');
+  parseEntry = require('./lib/parseEntry'),
+  funcHelper = require('./helpers/Function');
 
 function getEntry({
                     entry = './src/app.json',
@@ -31,7 +32,7 @@ function getEntry({
   appJson.pages.unshift('app');
 
   const sitemap = appJson.sitemapLocation || '',
-    entryFiles = parseEntry({baseUrl: './src', entryFile: appJson, cssSuffix, compileCssSuffix, xmlSuffix});
+    entryFiles = parseEntry({ baseUrl: './src', entryFile: appJson, cssSuffix, compileCssSuffix, xmlSuffix });
 
   if (sitemap) {
     let sitemapName = sitemap.replace(/(\.[\s\S]*?)$/, '');
@@ -56,13 +57,21 @@ class MiniappAutoPlugin {
       (compilation) => {
         const { entrypoints, assets } = compilation || {};
         let commons = this.getCommonSplit(entrypoints);
+
+        if (assets['commons/runtime.js']) {
+          const children = assets['commons/runtime.js'].children;
+          if (children && children[0]) {
+            assets['commons/runtime.js'].children[0]._value += funcHelper;
+          }
+        }
+
         Object.keys(assets).forEach((pathurl) => {
           const unixPathurl = pathurl.split('\\').join('\/'),
             entryCommon = commons[unixPathurl.replace(new RegExp(`\.(${this.options.cssSuffix}|js)$`), '')];
           if (!entryCommon) {
             return false;
           }
-          const { js, css} = entryCommon,
+          const { js, css } = entryCommon,
             jsLen = js.length,
             cssLen = css.length;
 
