@@ -8,6 +8,7 @@ module.exports = `!(function() {
       }
       return function() {
         console.warn('Function is not return a function!');
+        return global || my;
       };
     };
   })(Function);
