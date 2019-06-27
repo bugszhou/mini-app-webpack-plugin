@@ -7,7 +7,7 @@ module.exports = `!(function() {
         return newFn;
       }
       return function() {
-        console.warn('Function is not return a function!');
+        // console.warn('Function is not return a function!');
         return global || my;
       };
     };
