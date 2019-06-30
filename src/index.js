@@ -62,6 +62,8 @@ class MiniappAutoPlugin {
           const children = assets['commons/runtime.js'].children;
           if (children && children[0]) {
             assets['commons/runtime.js'].children[0]._value += funcHelper;
+          } else {
+            assets['commons/runtime.js']._value += funcHelper;
           }
         }
 
