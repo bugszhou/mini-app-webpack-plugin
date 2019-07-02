@@ -1,6 +1,6 @@
 {
   "name": "miniapp-auto-webpack-plugin",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "description": "小程序webpack插件",
   "main": "src/cjs.js",
   "scripts": {

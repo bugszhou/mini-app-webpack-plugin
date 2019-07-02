@@ -63,7 +63,11 @@ class MiniappAutoPlugin {
           if (children && children[0]) {
             assets['commons/runtime.js'].children[0]._value += funcHelper;
           } else {
-            assets['commons/runtime.js']._value += funcHelper;
+            if (assets['commons/runtime.js']._source) {
+              assets['commons/runtime.js']._source.children.push(funcHelper);
+            } else {
+              assets['commons/runtime.js']._value += funcHelper;
+            }
           }
         }
 
