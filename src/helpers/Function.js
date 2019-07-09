@@ -8,7 +8,87 @@ module.exports = `!(function() {
       }
       return function() {
         // console.warn('Function is not return a function!');
-        global.requestAnimationFrame=requestAnimationFrame;global.cancelAnimationFrame=cancelAnimationFrame;global.atob=atob;global.setTimeout=setTimeout;global.clearTimeout=clearTimeout;global.setInterval=setInterval;global.clearInterval=clearInterval;global.chrome=chrome;global.__global=__global;global.__wxRoute=__wxRoute;global.__wxRouteBegin=__wxRouteBegin;global.__wxAppCurrentFile__=__wxAppCurrentFile__;global.__wxAppData=__wxAppData;global.__wxAppCode__=__wxAppCode__;global.__vd_version_info__=__vd_version_info__;global.Component=Component;global.Behavior=Behavior;global.definePlugin=definePlugin;global.requirePlugin=requirePlugin;global.$gwx=$gwx;global.__workerVendorCode__=__workerVendorCode__;global.__workersCode__=__workersCode__;global.__WeixinWorker=__WeixinWorker;global.global=global;global.WeixinWorker=WeixinWorker;global.__wxConfig=__wxConfig;global.__devtoolsConfig=__devtoolsConfig;global.$gwxc=$gwxc;global.$gaic=$gaic;global.where=where;global.showDebugInfo=showDebugInfo;global.checkProxy=checkProxy;global.__disPlayURLCheckWarning=__disPlayURLCheckWarning;global.securityDetails=securityDetails;global.setSecurityDetails=setSecurityDetails;global.DeviceOrientation=DeviceOrientation;global.__WAServiceStartTime__=__WAServiceStartTime__;global.__WAServiceEndTime__=__WAServiceEndTime__;global.WeixinJSContext=WeixinJSContext;global.core=core;global.onbeforeunload=onbeforeunload;global.define=define;global.require=require;global.wx=wx;global.Page=Page;global.__webview_engine_version__=__webview_engine_version__;global.App=App;global.getApp=getApp;global.getCurrentPages=getCurrentPages;global.__pageComponent=__pageComponent;global.fn=fn;global.decodePathName=decodePathName;global.self=self;global.window=window;global.location=location;global.document=document;global.top=top;global.parent=parent;global.navigator=navigator;global.innerWidth=innerWidth;global.innerHeight=innerHeight;global.onload=onload;global.performance=performance;
+        global.App=App;
+        global.Behavior=Behavior;
+        global.Component=Component;
+        // ios9不兼容
+        // global.DeviceOrientation=DeviceOrientation;
+        global.Page=Page;
+        // ios9不兼容
+        // global.atob=atob;
+        global.clearInterval=clearInterval;
+        global.clearTimeout=clearTimeout;
+        global.getApp=getApp;
+        global.setInterval=setInterval;
+        global.setTimeout=setTimeout;
+        global.Infinity=Infinity;
+        global.Array=Array;
+        global.ArrayBuffer=ArrayBuffer;
+        global.Boolean=Boolean;
+        global.DataView=DataView;
+        global.Date=Date;
+        global.Error=Error;
+        global.EvalError=EvalError;
+        global.Float32Array=Float32Array;
+        global.Float64Array=Float64Array;
+        global.Int8Array=Int8Array;
+        global.Int16Array=Int16Array;
+        global.Int32Array=Int32Array;
+        // ios9不兼容
+        // global.Intl=Intl;
+        global.JSON=JSON;
+        global.Map=Map;
+        global.Math=Math;
+        global.NaN=NaN;
+        global.Number=Number;
+        global.Object=Object;
+        global.Promise=Promise;
+        // ios9不兼容
+        // global.Proxy=Proxy;
+        global.RangeError=RangeError;
+        global.ReferenceError=ReferenceError;
+        global.Reflect=Reflect;
+        global.RegExp=RegExp;
+        global.Set=Set;
+        global.String=String;
+        global.Symbol=Symbol;
+        global.SyntaxError=SyntaxError;
+        global.TypeError=TypeError;
+        global.URIError=URIError;
+        // ios9不兼容
+        // global.USBAlternateInterface=USBAlternateInterface;
+        // global.USBConfiguration=USBConfiguration;
+        // global.USBConnectionEvent=USBConnectionEvent;
+        // global.USBDevice=USBDevice;
+        // global.USBEndpoint=USBEndpoint;
+        // global.USBInTransferResult=USBInTransferResult;
+        // global.USBInterface=USBInterface;
+        // global.USBIsochronousInTransferPacket=USBIsochronousInTransferPacket;
+        // global.USBIsochronousInTransferResult=USBIsochronousInTransferResult;
+        // global.USBIsochronousOutTransferPacket=USBIsochronousOutTransferPacket;
+        // global.USBIsochronousOutTransferResult=USBIsochronousOutTransferResult;
+        // global.USBOutTransferResult=USBOutTransferResult;
+        global.Uint8Array=Uint8Array;
+        global.Uint8ClampedArray=Uint8ClampedArray;
+        global.Uint16Array=Uint16Array;
+        global.Uint32Array=Uint32Array;
+        global.WeakMap=WeakMap;
+        global.WeakSet=WeakSet;
+        // ios9不兼容
+        // global.WebAssembly=WebAssembly;
+        global.console=console;
+        global.decodeURI=decodeURI;
+        global.decodeURIComponent=decodeURIComponent;
+        global.encodeURI=encodeURI;
+        global.encodeURIComponent=encodeURIComponent;
+        global.escape=escape;
+        global.isFinite=isFinite;
+        global.isNaN=isNaN;
+        global.parseFloat=parseFloat;
+        global.parseInt=parseInt;
+        global.unescape=unescape;
+        // ios9不兼容
+        // global.URL=URL;
         return global || my;
       };
     };
