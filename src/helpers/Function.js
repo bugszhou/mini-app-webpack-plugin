@@ -8,6 +8,9 @@ module.exports = `!(function() {
       }
       return function() {
         // console.warn('Function is not return a function!');
+        if (my) {
+          return my;
+        }
         global.App=App;
         global.Behavior=Behavior;
         global.Component=Component;
