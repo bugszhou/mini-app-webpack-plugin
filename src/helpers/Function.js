@@ -8,10 +8,10 @@ module.exports = `!(function() {
       }
       return function() {
         // console.warn('Function is not return a function!');
-        if (my) {
+        if (typeof my !== 'undefined' && my) {
           return my;
         }
-        if (wx) {
+        if (typeof wx !== 'undefined' && wx) {
           global.App=App;
           global.Behavior=Behavior;
           global.Component=Component;
