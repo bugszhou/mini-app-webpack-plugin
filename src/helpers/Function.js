@@ -52,7 +52,7 @@ module.exports = `!(function() {
         // global.Proxy=Proxy;
         global.RangeError=RangeError;
         global.ReferenceError=ReferenceError;
-        global.Reflect=Reflect;
+        global.Reflect= typeof Reflect !== 'undefined'? Reflect : {};
         global.RegExp=RegExp;
         global.Set=Set;
         global.String=String;
