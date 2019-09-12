@@ -1,4 +1,5 @@
 module.exports = `!(function() {
+  var tmp = Function;
   Function = (function(OriginFunction){
     return function() {
       var args = Array.prototype.slice.call(arguments, 0),
@@ -98,4 +99,5 @@ module.exports = `!(function() {
       };
     };
   })(Function);
+  Function.prototype = tmp.prototype;
 })();`;
