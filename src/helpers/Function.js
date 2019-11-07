@@ -93,6 +93,9 @@ module.exports = `!(function() {
         global.parseFloat=parseFloat;
         global.parseInt=parseInt;
         global.unescape=unescape;
+        if (typeof setImmediate !=="undefined") {
+          global.setImmediate=setImmediate;
+        }
         // ios9不兼容
         // global.URL=URL;
         return global || my;
