@@ -16,7 +16,7 @@ const path = require('path'),
 module.exports = function({baseUrl = './src', entryFile = '', cssSuffix, xmlSuffix, compileCssSuffix} = {}) {
 
   let pages = entryFile.pages,
-    subpackages = entryFile.subpackages;
+    subpackages = entryFile.subpackages || entryFile.subPackages;
 
   if (hasSubPackages(subpackages)) {
     let tmp = [];
