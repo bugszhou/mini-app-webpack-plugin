@@ -102,5 +102,5 @@ module.exports = `!(function() {
       };
     };
   })(Function);
-  global.MiniFunction.prototype = tmp.prototype;
+  global.MiniFunction.prototype = Function.prototype;
 })();`;
