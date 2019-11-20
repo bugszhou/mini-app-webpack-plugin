@@ -1,6 +1,9 @@
 module.exports = `!(function() {
-  var tmp = Function;
-  Function = (function(OriginFunction){
+  if (!global) {
+    global = {};
+  }
+  global.MiniFunction = Function;
+  global.MiniFunction = (function(OriginFunction){
     return function() {
       var args = Array.prototype.slice.call(arguments, 0),
         newFn = new OriginFunction(args);
@@ -9,9 +12,6 @@ module.exports = `!(function() {
       }
       return function() {
         // console.warn('Function is not return a function!');
-        if (!global) {
-          global = {};
-        }
         if (typeof wx !== 'undefined' && wx) {
           global.App=App;
           global.Behavior=Behavior;
@@ -102,5 +102,5 @@ module.exports = `!(function() {
       };
     };
   })(Function);
-  Function.prototype = tmp.prototype;
+  global.MiniFunction.prototype = tmp.prototype;
 })();`;
