@@ -2,8 +2,8 @@ module.exports = `!(function() {
   if (!global) {
     global = {};
   }
-  global.MiniFunction = Function;
-  global.MiniFunction = (function(OriginFunction){
+  Function.MiniFunction = Function;
+  Function.MiniFunction = (function(OriginFunction){
     return function() {
       var args = Array.prototype.slice.call(arguments, 0),
         newFn = new OriginFunction(args);
@@ -93,6 +93,7 @@ module.exports = `!(function() {
         global.parseFloat=parseFloat;
         global.parseInt=parseInt;
         global.unescape=unescape;
+        global.Function=Function;
         if (typeof setImmediate !=="undefined") {
           global.setImmediate=setImmediate;
         }
@@ -102,5 +103,5 @@ module.exports = `!(function() {
       };
     };
   })(Function);
-  global.MiniFunction.prototype = Function.prototype;
+  Function.MiniFunction.prototype = Function.prototype;
 })();`;
