@@ -79,7 +79,9 @@ module.exports = `!(function() {
         global.Uint16Array=Uint16Array;
         global.Uint32Array=Uint32Array;
         global.WeakMap=WeakMap;
-        global.WeakSet=WeakSet;
+        if (typeof WeakSet !=="undefined") {
+          global.WeakSet=WeakSet;
+        }
         // ios9不兼容
         // global.WebAssembly=WebAssembly;
         global.console=console;
