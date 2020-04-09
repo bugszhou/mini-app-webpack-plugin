@@ -15,7 +15,8 @@ function getEntry({
                     entry = './src/app.json',
                     cssSuffix = 'css',
                     compileCssSuffix = 'css',
-                    xmlSuffix = 'html'
+                    xmlSuffix = 'html',
+                    jsSuffix = 'js',
                   } = {}) {
   const entryFile = path.resolve(process.cwd(), entry);
   if (!exists(entryFile)) {
@@ -32,7 +33,7 @@ function getEntry({
   appJson.pages.unshift('app');
 
   const sitemap = appJson.sitemapLocation || '',
-    entryFiles = parseEntry({ baseUrl: './src', entryFile: appJson, cssSuffix, compileCssSuffix, xmlSuffix });
+    entryFiles = parseEntry({ baseUrl: './src', entryFile: appJson, cssSuffix, compileCssSuffix, xmlSuffix, jsSuffix });
 
   if (sitemap) {
     let sitemapName = sitemap.replace(/(\.[\s\S]*?)$/, '');

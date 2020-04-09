@@ -13,7 +13,7 @@ const path = require('path'),
  * wxs ==> [wxs(js)] 单独一个webpack
  */
 
-module.exports = function({baseUrl = './src', entryFile = '', cssSuffix, xmlSuffix, compileCssSuffix} = {}) {
+module.exports = function({baseUrl = './src', entryFile = '', cssSuffix, xmlSuffix, compileCssSuffix, jsSuffix = 'js'} = {}) {
 
   let pages = entryFile.pages,
     subpackages = entryFile.subpackages || entryFile.subPackages;
@@ -28,7 +28,7 @@ module.exports = function({baseUrl = './src', entryFile = '', cssSuffix, xmlSuff
     });
     pages = pages.concat(tmp);
   }
-  return getBaseEntry(pages, cssSuffix, xmlSuffix, baseUrl, compileCssSuffix);
+  return getBaseEntry(pages, cssSuffix, xmlSuffix, baseUrl, compileCssSuffix, jsSuffix);
 };
 
 function hasSubPackages(packages) {
@@ -39,7 +39,7 @@ function isPlugin(url) {
   return /^plugin\:\/\//.test(url);
 }
 
-function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffix) {
+function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffix, jsSuffix) {
   const cwd = process.cwd();
   let entry = {},
     entryJsonFiles = {};
@@ -47,7 +47,7 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffi
     if (isPlugin(page)) {
       return false;
     }
-    let {jsPath, xml, css, json, ocss} = getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
+    let {jsPath, xml, css, json, ocss} = getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix, jsSuffix);
     let {pageEntry, jsonFiles} = getEntry([jsPath, xml, css, json, ocss], baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
     if (exists(json.reourcePath)) {
       let components = getJsonComponents(json.reourcePath, JSON.parse(fs.readFileSync(json.reourcePath).toString() || '{}'), {
@@ -55,7 +55,8 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffi
         compileCssSuffix,
         xmlSuffix,
         cwd,
-        baseUrl
+        baseUrl,
+        jsSuffix,
       });
       let jsonComponentsData = eachJsonComponents(components, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
       entry = {...entry, ...jsonComponentsData.entry};
@@ -74,11 +75,11 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffi
   };
 }
 
-function getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix) {
+function getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix, jsSuffix) {
   return {
     jsPath: {
-      reourcePath: path.resolve(cwd, `${baseUrl}/${page}.js`),
-      entry: `${page}.js`
+      reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${jsSuffix}`),
+      entry: `${page}.${jsSuffix}`
     },
     xml: {
       reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${xmlSuffix}`),
@@ -138,7 +139,7 @@ function getJsonComponents(resourcePath, json = {}, options = {}) {
     let entryKey = getRequire(resourcePath, url);
     return {
       entryName: entryKey,
-      data: getEntryFileUrl(entryKey, options.cwd, options.baseUrl, options.cssSuffix, options.xmlSuffix, options.compileCssSuffix)
+      data: getEntryFileUrl(entryKey, options.cwd, options.baseUrl, options.cssSuffix, options.xmlSuffix, options.compileCssSuffix, option.jsSuffix)
     };
   }) || [];
 }
