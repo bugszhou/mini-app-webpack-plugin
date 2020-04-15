@@ -139,7 +139,7 @@ function getJsonComponents(resourcePath, json = {}, options = {}) {
     let entryKey = getRequire(resourcePath, url);
     return {
       entryName: entryKey,
-      data: getEntryFileUrl(entryKey, options.cwd, options.baseUrl, options.cssSuffix, options.xmlSuffix, options.compileCssSuffix, option.jsSuffix)
+      data: getEntryFileUrl(entryKey, options.cwd, options.baseUrl, options.cssSuffix, options.xmlSuffix, options.compileCssSuffix, options.jsSuffix)
     };
   }) || [];
 }
