@@ -1,9 +1,9 @@
-const path = require('path'),
-  fs = require('fs'),
+const path = require("path"),
+  fs = require("fs"),
   exists = fs.existsSync,
-  isObject = require('lodash/isObject'),
-  isEmpty = require('lodash/isEmpty'),
-  isArray = require('lodash/isArray');
+  isObject = require("lodash/isObject"),
+  isEmpty = require("lodash/isEmpty"),
+  isArray = require("lodash/isArray");
 
 /**
  *
@@ -13,22 +13,35 @@ const path = require('path'),
  * wxs ==> [wxs(js)] 单独一个webpack
  */
 
-module.exports = function({baseUrl = './src', entryFile = '', cssSuffix, xmlSuffix, compileCssSuffix, jsSuffix = 'js'} = {}) {
-
+module.exports = function ({
+  baseUrl = "./src",
+  entryFile = "",
+  cssSuffix,
+  xmlSuffix,
+  compileCssSuffix,
+  jsSuffix = "js",
+} = {}) {
   let pages = entryFile.pages,
     subpackages = entryFile.subpackages || entryFile.subPackages;
 
   if (hasSubPackages(subpackages)) {
     let tmp = [];
-    subpackages.forEach(subpkg => {
+    subpackages.forEach((subpkg) => {
       const root = subpkg.root;
-      subpkg.pages.forEach(page => {
+      subpkg.pages.forEach((page) => {
         tmp.push(`${root}/${page}`);
       });
     });
     pages = pages.concat(tmp);
   }
-  return getBaseEntry(pages, cssSuffix, xmlSuffix, baseUrl, compileCssSuffix, jsSuffix);
+  return getBaseEntry(
+    pages,
+    cssSuffix,
+    xmlSuffix,
+    baseUrl,
+    compileCssSuffix,
+    jsSuffix,
+  );
 };
 
 function hasSubPackages(packages) {
@@ -39,7 +52,14 @@ function isPlugin(url) {
   return /^plugin\:\/\//.test(url);
 }
 
-function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffix, jsSuffix) {
+function getBaseEntry(
+  pages = [],
+  cssSuffix,
+  xmlSuffix,
+  baseUrl,
+  compileCssSuffix,
+  jsSuffix,
+) {
   const cwd = process.cwd();
   let entry = {},
     entryJsonFiles = {};
@@ -47,20 +67,47 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffi
     if (isPlugin(page)) {
       return false;
     }
-    let {jsPath, xml, css, json, ocss} = getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix, jsSuffix);
-    let {pageEntry, jsonFiles} = getEntry([jsPath, xml, css, json, ocss], baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
+    let { jsPath, xml, css, json, ocss } = getEntryFileUrl(
+      page,
+      cwd,
+      baseUrl,
+      cssSuffix,
+      xmlSuffix,
+      compileCssSuffix,
+      jsSuffix,
+    );
+    let { pageEntry, jsonFiles } = getEntry(
+      [jsPath, xml, css, json, ocss],
+      baseUrl,
+      cssSuffix,
+      xmlSuffix,
+      compileCssSuffix,
+    );
     if (exists(json.reourcePath)) {
-      let components = getJsonComponents(json.reourcePath, JSON.parse(fs.readFileSync(json.reourcePath).toString() || '{}'), {
-        cssSuffix,
-        compileCssSuffix,
-        xmlSuffix,
-        cwd,
+      let components = getJsonComponents(
+        json.reourcePath,
+        JSON.parse(fs.readFileSync(json.reourcePath).toString() || "{}"),
+        {
+          cssSuffix,
+          compileCssSuffix,
+          xmlSuffix,
+          cwd,
+          baseUrl,
+          jsSuffix,
+        },
+      );
+      let jsonComponentsData = eachJsonComponents(
+        components,
         baseUrl,
-        jsSuffix,
-      });
-      let jsonComponentsData = eachJsonComponents(components, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
-      entry = {...entry, ...jsonComponentsData.entry};
-      entryJsonFiles = {...entryJsonFiles, ...jsonComponentsData.entryJsonFiles};
+        cssSuffix,
+        xmlSuffix,
+        compileCssSuffix,
+      );
+      entry = { ...entry, ...jsonComponentsData.entry };
+      entryJsonFiles = {
+        ...entryJsonFiles,
+        ...jsonComponentsData.entryJsonFiles,
+      };
     }
     if (pageEntry.length) {
       entry[`${page}`] = pageEntry;
@@ -71,39 +118,53 @@ function getBaseEntry(pages = [], cssSuffix, xmlSuffix, baseUrl, compileCssSuffi
   });
   return {
     entry,
-    entryJsonFiles
+    entryJsonFiles,
   };
 }
 
-function getEntryFileUrl(page, cwd, baseUrl, cssSuffix, xmlSuffix, compileCssSuffix, jsSuffix) {
+function getEntryFileUrl(
+  page,
+  cwd,
+  baseUrl,
+  cssSuffix,
+  xmlSuffix,
+  compileCssSuffix,
+  jsSuffix,
+) {
   return {
     jsPath: {
       reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${jsSuffix}`),
-      entry: `${page}.${jsSuffix}`
+      entry: `${page}.${jsSuffix}`,
     },
     xml: {
       reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${xmlSuffix}`),
-      entry: `${page}.${xmlSuffix}`
+      entry: `${page}.${xmlSuffix}`,
     },
     css: {
       reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${compileCssSuffix}`),
-      entry: `${page}.${compileCssSuffix}`
+      entry: `${page}.${compileCssSuffix}`,
     },
     ocss: {
       reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${cssSuffix}`),
-      entry: `${page}.${cssSuffix}`
+      entry: `${page}.${cssSuffix}`,
     },
     json: {
       reourcePath: path.resolve(cwd, `${baseUrl}/${page}.json`),
-      entry: `${page}.json`
-    }
+      entry: `${page}.json`,
+    },
   };
 }
 
-function getEntry(entry = [], baseUrl = './src', cssSuffix, xmlSuffix, compileCssSuffix) {
+function getEntry(
+  entry = [],
+  baseUrl = "./src",
+  cssSuffix,
+  xmlSuffix,
+  compileCssSuffix,
+) {
   let pageEntry = [],
     jsonFiles = [];
-  entry.forEach(({reourcePath, entry}) => {
+  entry.forEach(({ reourcePath, entry }) => {
     let entryUrl = `${baseUrl}/${entry}`;
     if (new RegExp(`\.(${cssSuffix}|${compileCssSuffix}|json)$`).test(entry)) {
       if (exists(reourcePath)) {
@@ -120,36 +181,59 @@ function getEntry(entry = [], baseUrl = './src', cssSuffix, xmlSuffix, compileCs
   });
   return {
     pageEntry,
-    jsonFiles
+    jsonFiles,
   };
 }
 
 function getJsonComponents(resourcePath, json = {}, options = {}) {
-  let isUseComponent = isObject(json.usingComponents) && !isEmpty(json.usingComponents);
+  let isUseComponent =
+    isObject(json.usingComponents) && !isEmpty(json.usingComponents);
   if (!isUseComponent) {
     return [];
   }
-  return Object.entries(json.usingComponents).map(([componentName, url]) => {
-    if (isPlugin(url)) {
+  return (
+    Object.entries(json.usingComponents).map(([componentName, url]) => {
+      if (isPlugin(url) || url.includes("weui-miniprogram")) {
+        return {
+          entryName: "",
+          data: {},
+        };
+      }
+      let entryKey = getRequire(resourcePath, url);
       return {
-        entryName: '',
-        data: {},
+        entryName: entryKey,
+        data: getEntryFileUrl(
+          entryKey,
+          options.cwd,
+          options.baseUrl,
+          options.cssSuffix,
+          options.xmlSuffix,
+          options.compileCssSuffix,
+          options.jsSuffix,
+        ),
       };
-    }
-    let entryKey = getRequire(resourcePath, url);
-    return {
-      entryName: entryKey,
-      data: getEntryFileUrl(entryKey, options.cwd, options.baseUrl, options.cssSuffix, options.xmlSuffix, options.compileCssSuffix, options.jsSuffix)
-    };
-  }) || [];
+    }) || []
+  );
 }
 
-function eachJsonComponents(components = [], baseUrl, cssSuffix, xmlSuffix, compileCssSuffix) {
+function eachJsonComponents(
+  components = [],
+  baseUrl,
+  cssSuffix,
+  xmlSuffix,
+  compileCssSuffix,
+) {
   const entry = {},
     entryJsonFiles = {};
-  components.forEach(({entryName, data}) => {
+  components.forEach(({ entryName, data }) => {
     if (entryName) {
-      let componentsEntryObj = getEntry([data.jsPath, data.xml, data.css, data.json, data.ocss], baseUrl, cssSuffix, xmlSuffix, compileCssSuffix);
+      let componentsEntryObj = getEntry(
+        [data.jsPath, data.xml, data.css, data.json, data.ocss],
+        baseUrl,
+        cssSuffix,
+        xmlSuffix,
+        compileCssSuffix,
+      );
       let componentsEntry = componentsEntryObj.pageEntry;
       let componentsJsonFiles = componentsEntryObj.jsonFiles;
       if (componentsEntry.length) {
@@ -167,14 +251,14 @@ function eachJsonComponents(components = [], baseUrl, cssSuffix, xmlSuffix, comp
 }
 
 function getRequire(resourcePath, url) {
-  const isRootUrl = url.indexOf('\/') === 0,
+  const isRootUrl = url.indexOf("/") === 0,
     fileDir = path.dirname(resourcePath),
-    srcName = path.relative(process.cwd(), fileDir).split(path.sep)[0] || 'src',
+    srcName = path.relative(process.cwd(), fileDir).split(path.sep)[0] || "src",
     srcDir = path.resolve(process.cwd(), srcName);
 
   if (!isRootUrl) {
     return path.relative(srcDir, path.resolve(fileDir, url));
   }
 
-  return url.replace('\/', '');
+  return url.replace("/", "");
 }
