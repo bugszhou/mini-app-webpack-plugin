@@ -200,7 +200,50 @@ class MiniappAutoPlugin {
   }
 }
 
+function getAppJson({
+  entry = './src/app.json',
+  autoImportAppConfigPath = "./src/outside",
+} = {}) {
+  const entryFile = path.resolve(process.cwd(), entry);
+  let subsAppJSON = [];
+  if (autoImportAppConfigPath) {
+    const results = globby.sync(path.posix.join(process.cwd(), autoImportAppConfigPath), {
+      expandDirectories: {
+        files: ['app.json'],
+      },
+    });
+    results.forEach((pathurl) => {
+      let subData = readFileSync(pathurl, 'utf-8');
+      try {
+        subData = JSON.parse(subData || '{}');
+      } catch (e) {
+        subData = null;
+      }
+      if (subData && subData.subpackages && Array.isArray(subData.subpackages)) {
+        if (subData.subpackages[0]) {
+          subsAppJSON.push(subData.subpackages[0]);
+        }
+      }
+    });
+  }
+  if (!exists(entryFile)) {
+    throw new Error(`Can not find module '${entry}'`);
+  }
+  let appJson = readFileSync(entryFile, 'utf-8');
+  try {
+    appJson = JSON.parse(appJson || '{}');
+    if (subsAppJSON && subsAppJSON.length > 0) {
+      appJson.subpackages = [...(Array.isArray(appJson.subpackages) ? appJson.subpackages : []), ...subsAppJSON];
+    }
+  } catch (e) {
+    console.error(e);
+    throw new Error('Entry must be json string!');
+  }
+  return appJson;
+}
+
 exports.default = {
   getEntry,
-  MiniappAutoPlugin
+  MiniappAutoPlugin,
+  getAppJson,
 };
