@@ -8,6 +8,7 @@ const pluginName = 'mini-app-webpack-plugin',
   path = require('path'),
   readFileSync = require('fs').readFileSync,
   exists = require('fs').existsSync,
+  globby = require("globby"),
   parseEntry = require('./lib/parseEntry'),
   funcHelper = require('./helpers/Function');
 
