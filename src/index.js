@@ -12,18 +12,22 @@ const pluginName = 'mini-app-webpack-plugin',
   parseEntry = require('./lib/parseEntry'),
   funcHelper = require('./helpers/Function');
 
+const UNESCAPED_GLOB_SYMBOLS_RE = /(\\?)([()*?[\]{|}]|^!|[!+@](?=\())/g;
+
 function getEntry({
                     entry = './src/app.json',
                     cssSuffix = 'css',
                     compileCssSuffix = 'css',
                     xmlSuffix = 'html',
                     jsSuffix = 'js',
-                    autoImportAppConfigPath = "./src/outside",
+                    autoImportAppConfigPath = "src/outside",
                   } = {}) {
   const entryFile = path.resolve(process.cwd(), entry);
   let subsAppJSON = [];
   if (autoImportAppConfigPath) {
-    const results = globby.sync(path.posix.join(process.cwd(), autoImportAppConfigPath), {
+    const context = process.cwd();
+    const globbyPath = path.posix.join(replaceBackslashes(context).replace(UNESCAPED_GLOB_SYMBOLS_RE, '\\$2'), replaceBackslashes(autoImportAppConfigPath));
+    const results = globby.sync(globbyPath, {
       expandDirectories: {
         files: ['app.json'],
       },
@@ -241,6 +245,15 @@ function getAppJson({
     throw new Error('Entry must be json string!');
   }
   return appJson;
+}
+
+/**
+ * @param {string} str
+ * @returns {string}
+ */
+
+function replaceBackslashes(str) {
+  return str.replace(/\\/g, '/');
 }
 
 exports.default = {
