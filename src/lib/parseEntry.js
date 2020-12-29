@@ -131,25 +131,27 @@ function getEntryFileUrl(
   compileCssSuffix,
   jsSuffix,
 ) {
+  const basePath = page.includes("node_modules") ? "" : `${baseUrl}/`;
+  const tmpJsSuffix = page.includes("node_modules") ? "js" : `${jsSuffix}`;
   return {
     jsPath: {
-      reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${jsSuffix}`),
-      entry: `${page}.${jsSuffix}`,
+      reourcePath: path.resolve(cwd, `${basePath}${page}.${jsSuffix}`),
+      entry: `${page}.${tmpJsSuffix}`,
     },
     xml: {
-      reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${xmlSuffix}`),
+      reourcePath: path.resolve(cwd, `${basePath}${page}.${xmlSuffix}`),
       entry: `${page}.${xmlSuffix}`,
     },
     css: {
-      reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${compileCssSuffix}`),
+      reourcePath: path.resolve(cwd, `${basePath}${page}.${compileCssSuffix}`),
       entry: `${page}.${compileCssSuffix}`,
     },
     ocss: {
-      reourcePath: path.resolve(cwd, `${baseUrl}/${page}.${cssSuffix}`),
+      reourcePath: path.resolve(cwd, `${basePath}${page}.${cssSuffix}`),
       entry: `${page}.${cssSuffix}`,
     },
     json: {
-      reourcePath: path.resolve(cwd, `${baseUrl}/${page}.json`),
+      reourcePath: path.resolve(cwd, `${basePath}${page}.json`),
       entry: `${page}.json`,
     },
   };
@@ -165,7 +167,7 @@ function getEntry(
   let pageEntry = [],
     jsonFiles = [];
   entry.forEach(({ reourcePath, entry }) => {
-    let entryUrl = `${baseUrl}/${entry}`;
+    let entryUrl = entry.includes("node_modules") ? `./${entry}` : `${baseUrl}/${entry}`;
     if (new RegExp(`\.(${cssSuffix}|${compileCssSuffix}|json)$`).test(entry)) {
       if (exists(reourcePath)) {
         pageEntry.push(entryUrl);
