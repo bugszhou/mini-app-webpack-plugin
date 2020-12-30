@@ -231,7 +231,7 @@ function findComponents(resourcePath, json = {}, options = {}, returnData = {}) 
     const data = {
       entryName: entryKey,
       data: getEntryFileUrl(
-        getNodeModulesSource(resourcePath, url, entryKey),
+        getNodeModulesSource(resourcePath, url, entryKey, options.xmlSuffix),
         options.cwd,
         options.baseUrl,
         options.cssSuffix,
@@ -240,6 +240,7 @@ function findComponents(resourcePath, json = {}, options = {}, returnData = {}) 
         options.jsSuffix,
       ),
     };
+    
     returnData[data.entryName] = data;
     const jsonPath = data.data.json.reourcePath;
     if (exists(jsonPath)) {
@@ -286,46 +287,38 @@ function eachJsonComponents(
 }
 
 function getRequire(resourcePath, url, xmlSuffix = "wxml") {
-  const isRootUrl = url.indexOf("/") === 0,
+  const isRootUrl = path.isAbsolute(url),
     fileDir = path.dirname(resourcePath),
     srcName = path.relative(process.cwd(), fileDir).split(path.sep)[0] || "src",
     srcDir = path.resolve(process.cwd(), srcName);
 
   if (!isRootUrl) {
-    return path.relative(srcDir, path.resolve(fileDir, url));
-  }
-
-  const absolutePath = path.resolve(fileDir, url.substr(1));
-  if (!exists(`${absolutePath}.${xmlSuffix}`)) {
-    const tmpAbsolutePath = path.resolve(process.cwd(), "node_modules", url.substr(1));
-    if (exists(`${tmpAbsolutePath}.${xmlSuffix}`)) {
-      return url;
+    const absolutePath = path.resolve(fileDir, url);
+    if (exists(`${absolutePath}.${xmlSuffix}`)) {
+      return path.relative(srcDir, absolutePath);
     }
+    return url;
   }
 
-  return url.replace("/", "");
+  return url.substr(1);
 }
 
 function getNodeModulesSource(resourcePath, url, entryKey, xmlSuffix = "wxml") {
-  const isRootUrl = url.indexOf("/") === 0,
+  const isRootUrl = path.isAbsolute(url),
     fileDir = path.dirname(resourcePath),
-    srcName = path.relative(process.cwd(), fileDir).split(path.sep)[0] || "src";
-
-  if (isRootUrl) {
-    const absolutePath = path.resolve(fileDir, url.substr(1));
-    if (!exists(`${absolutePath}.${xmlSuffix}`)) {
-      const tmpAbsolutePath = path.resolve(process.cwd(), "node_modules", url.substr(1));
-      if (exists(`${tmpAbsolutePath}.${xmlSuffix}`)) {
-        return path.relative(process.cwd(), tmpAbsolutePath);
-      }
-    }
-  }
-  if (srcName !== "node_modules") {
-    return entryKey;
-  }
+    srcName = path.relative(process.cwd(), fileDir).split(path.sep)[0] || "src",
+    srcDir = path.resolve(process.cwd(), srcName);
 
   if (!isRootUrl) {
-    return path.relative(process.cwd(), path.resolve(fileDir, url));
+    const absolutePath = path.resolve(fileDir, url);
+    if (!absolutePath.includes("node_modules") && exists(`${absolutePath}.${xmlSuffix}`)) {
+      return path.relative(srcDir, absolutePath);
+    }
+    const tmpAbsolutePath = (absolutePath.includes("node_modules") && path.isAbsolute(absolutePath)) ? absolutePath : path.resolve(process.cwd(), "node_modules", url);
+    if (exists(`${tmpAbsolutePath}.${xmlSuffix}`)) {
+      return path.relative(process.cwd(), tmpAbsolutePath);
+    }
+    return entryKey;
   }
 
   return entryKey;
