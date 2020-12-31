@@ -240,7 +240,7 @@ function findComponents(resourcePath, json = {}, options = {}, returnData = {}) 
         options.jsSuffix,
       ),
     };
-    
+
     returnData[data.entryName] = data;
     const jsonPath = data.data.json.reourcePath;
     if (exists(jsonPath)) {
@@ -293,8 +293,11 @@ function getRequire(resourcePath, url, xmlSuffix = "wxml") {
     srcDir = path.resolve(process.cwd(), srcName);
 
   if (!isRootUrl) {
-    const absolutePath = path.resolve(fileDir, url);
+    let absolutePath = path.resolve(fileDir, url);
     if (exists(`${absolutePath}.${xmlSuffix}`)) {
+      if (resourcePath.includes("node_modules")) {
+        absolutePath = getNodeModulesEntryKey(absolutePath);
+      }
       return path.relative(srcDir, absolutePath);
     }
     return url;
@@ -314,12 +317,65 @@ function getNodeModulesSource(resourcePath, url, entryKey, xmlSuffix = "wxml") {
     if (!absolutePath.includes("node_modules") && exists(`${absolutePath}.${xmlSuffix}`)) {
       return path.relative(srcDir, absolutePath);
     }
-    const tmpAbsolutePath = (absolutePath.includes("node_modules") && path.isAbsolute(absolutePath)) ? absolutePath : path.resolve(process.cwd(), "node_modules", url);
+    const isNodeModule = absolutePath.includes("node_modules") && path.isAbsolute(absolutePath);
+    const tmpAbsolutePath = isNodeModule ? absolutePath : path.resolve(process.cwd(), "node_modules", url);
     if (exists(`${tmpAbsolutePath}.${xmlSuffix}`)) {
       return path.relative(process.cwd(), tmpAbsolutePath);
     }
-    return entryKey;
+    const nodeModulesPath = path.resolve(process.cwd(), "node_modules");
+    const urls = url.split("/");
+    let jsonData = {};
+    let ind = 1;
+    if (exists(path.resolve(nodeModulesPath, urls[0], "package.json"))) {
+      try {
+        jsonData = JSON.parse(fs.readFileSync(path.resolve(nodeModulesPath, urls[0], "package.json")).toString());
+        ind = 1;
+      } catch (e) {
+        throw e;
+      }
+    } else {
+      try {
+        jsonData = JSON.parse(fs.readFileSync(path.resolve(nodeModulesPath, urls[0], urls[1], "package.json")).toString());
+        ind = 2;
+      } catch (e) {
+        throw e;
+      }
+    }
+    if (!jsonData.miniprogram || !jsonData.files) {
+      return entryKey;
+    }
+    const dist = jsonData.miniprogram || (Array.isArray(jsonData.files) ? jsonData.files[0] : jsonData.files);
+    urls.splice(ind, 0, dist);
+    return path.relative(process.cwd(), path.resolve(process.cwd(), "node_modules", urls.join("/")));
   }
 
   return entryKey;
+}
+
+function getNodeModulesEntryKey(resourcePath) {
+  const nodeModulesPath = path.resolve(process.cwd(), "node_modules");
+  const moduleRelativePath = path.relative(nodeModulesPath, resourcePath);
+  const urls = moduleRelativePath.split("/");
+  let jsonData = {};
+  let ind = 1;
+  if (exists(path.resolve(nodeModulesPath, urls[0], "package.json"))) {
+    try {
+      jsonData = JSON.parse(fs.readFileSync(path.resolve(nodeModulesPath, urls[0], "package.json")).toString());
+      ind = 1;
+    } catch (e) {
+      throw e;
+    }
+  } else {
+    try {
+      jsonData = JSON.parse(fs.readFileSync(path.resolve(nodeModulesPath, urls[0], urls[1], "package.json")).toString());
+      ind = 2;
+    } catch (e) {
+      throw e;
+    }
+  }
+  if (!jsonData.miniprogram || !jsonData.files) {
+    return resourcePath;
+  }
+  urls.splice(ind, 1, "");
+  return path.resolve(nodeModulesPath, urls.join("/"));
 }
