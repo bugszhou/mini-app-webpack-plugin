@@ -1,3 +1,5 @@
+const isArrayLike = require("lodash/isArrayLike");
+
 const path = require("path"),
   fs = require("fs"),
   exists = fs.existsSync,
@@ -213,7 +215,7 @@ function getJsonComponents(resourcePath, json = {}, options = {}) {
  * @param {Object} json 页面或者组件的json配置
  * @param {Object} options 文件后缀信息
  */
-function findComponents(resourcePath, json = {}, options = {}, returnData = {}) {
+function findComponents(resourcePath, json = {}, options = {}, returnData = {}, lastEntryKey = "") {
   let isUseComponent =
     isObject(json.usingComponents) && !isEmpty(json.usingComponents);
   if (!isUseComponent) {
@@ -226,7 +228,7 @@ function findComponents(resourcePath, json = {}, options = {}, returnData = {}) 
         data: {},
       };
     }
-    let entryKey = getRequire(resourcePath, url, options.xmlSuffix);
+    let entryKey = getRequire(resourcePath, url, options.xmlSuffix, lastEntryKey);
     
     const data = {
       entryName: entryKey,
@@ -246,7 +248,7 @@ function findComponents(resourcePath, json = {}, options = {}, returnData = {}) 
     if (exists(jsonPath)) {
       const jsonData = JSON.parse(fs.readFileSync(jsonPath).toString() || "{}");
       if (jsonData.usingComponents) {
-        findComponents(jsonPath, jsonData, options, returnData);
+        findComponents(jsonPath, jsonData, options, returnData, entryKey);
       }
     }
   });
@@ -286,7 +288,7 @@ function eachJsonComponents(
   };
 }
 
-function getRequire(resourcePath, url, xmlSuffix = "wxml") {
+function getRequire(resourcePath, url, xmlSuffix = "wxml", entryKey) {
   const isRootUrl = path.isAbsolute(url),
     fileDir = path.dirname(resourcePath),
     srcName = path.relative(process.cwd(), fileDir).split(path.sep)[0] || "src",
@@ -296,7 +298,7 @@ function getRequire(resourcePath, url, xmlSuffix = "wxml") {
     let absolutePath = path.resolve(fileDir, url);
     if (exists(`${absolutePath}.${xmlSuffix}`)) {
       if (resourcePath.includes("node_modules")) {
-        absolutePath = getNodeModulesEntryKey(absolutePath);
+        absolutePath = getNodeModulesEntryKey(absolutePath, entryKey);
       }
       return path.relative(srcDir, absolutePath);
     }
@@ -341,10 +343,11 @@ function getNodeModulesSource(resourcePath, url, entryKey, xmlSuffix = "wxml") {
         throw e;
       }
     }
-    if (!jsonData.miniprogram || !jsonData.files) {
+    if (!jsonData.miniprogram && !jsonData.files) {
       return entryKey;
     }
     const dist = jsonData.miniprogram || (Array.isArray(jsonData.files) ? jsonData.files[0] : jsonData.files);
+
     urls.splice(ind, 0, dist);
     return path.relative(process.cwd(), path.resolve(process.cwd(), "node_modules", urls.join("/")));
   }
@@ -352,7 +355,7 @@ function getNodeModulesSource(resourcePath, url, entryKey, xmlSuffix = "wxml") {
   return entryKey;
 }
 
-function getNodeModulesEntryKey(resourcePath) {
+function getNodeModulesEntryKey(resourcePath, entryKey = "") {
   const nodeModulesPath = path.resolve(process.cwd(), "node_modules");
   const moduleRelativePath = path.relative(nodeModulesPath, resourcePath);
   const urls = moduleRelativePath.split("/");
@@ -373,8 +376,18 @@ function getNodeModulesEntryKey(resourcePath) {
       throw e;
     }
   }
-  if (!jsonData.miniprogram || !jsonData.files) {
+  if (!jsonData.miniprogram && !jsonData.files) {
     return resourcePath;
+  }
+  let libNames = [];
+  if (Array.isArray(jsonData.files)) {
+    libNames = [...jsonData.files, jsonData.miniprogram || ""];
+  } else {
+    libNames = [jsonData.files, jsonData.miniprogram || ""];
+  }
+
+  if (libNames.includes(urls[ind]) && libNames.includes(entryKey.split("/")[ind])) {
+    return path.resolve(nodeModulesPath, urls.join("/"));
   }
   urls.splice(ind, 1, "");
   return path.resolve(nodeModulesPath, urls.join("/"));
